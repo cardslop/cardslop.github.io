@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer"><title>Cardslop</title><meta name="signaling" content="https://cardslop-signaling.tom-663.workers.dev"><meta name="guest-origin" content="https://cardslop.github.io"></head>
+<body><style>
+body { margin: 0; background: #f4f2eb; color: #192b24; font: 17px system-ui, sans-serif; }
+main { max-width: 72rem; margin: auto; padding: 1.5rem; }
+button, input { min-width: 44px; min-height: 44px; font: inherit; margin: .3rem; border-radius: .4rem; }
+input[type="checkbox"] { width: 44px; height: 44px; vertical-align: middle; }
+button { padding: .5rem .8rem; cursor: pointer; }
+button:disabled { cursor: default; opacity: .5; }
+.recovery-dialog { position: fixed; inset: 0; z-index: 100; box-sizing: border-box; padding: clamp(1rem, 8vw, 6rem); overflow: auto; background: #f4f2eb; color: #192b24; }
+:focus-visible { outline: 3px solid #1758a5; outline-offset: 3px; }
+summary { min-height: 44px; cursor: pointer; padding: .5rem; }
+#player-statistics { padding: .5rem; }
+#player-statistics > div { border-bottom: 1px solid #89968e; padding-bottom: 1rem; }
+label { display: inline-block; margin: .4rem; }
+.auction { background: #e3ece5; padding: 1rem; border-radius: 1rem; margin-top: 1rem; }
+#hand { display: flex; flex-wrap: wrap; gap: .35rem; }
+.playing-card { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; height: 72px; padding: .2rem; background: white; border: 1px solid #89968e; border-radius: .4rem; font-size: 1.3rem; }
+.suit-1, .suit-3 { color: #b02435; }
+#bid-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 30rem; }
+.public-bids { display: flex; flex-wrap: wrap; gap: .4rem; }
+.bid-bubble { padding: .5rem; background: white; border-radius: .6rem; }
+.meld-participant { transform: translateY(-.6rem); border: 2px solid #9b7014; }
+.meld-dimmed { opacity: .4; }
+.illegal-card { opacity: .45; }
+.legal-card { border: 2px solid #245b3b; }
+.winning-card { font-weight: bold; background: #ffe9aa; }
+.disallowed-meld { text-decoration: line-through; }
+.partnership-score { padding: .8rem; background: white; border-radius: .5rem; margin: .5rem 0; }
+#hand { padding-top: .8rem; }
+.meld-panel { background: white; padding: 1rem; border: 2px solid #89968e; border-radius: .6rem; }
+.trump-badge { display: inline-block; padding: .4rem; background: #ffe9aa; border-radius: .4rem; }
+.declarer-trump { font-size: 2rem; }
+.meld-nameplates { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr); gap: 1rem; text-align: center; }
+.meld-nameplate.position-0 { grid-column: 2; grid-row: 3; }
+.meld-nameplate.position-1 { grid-column: 1; grid-row: 2; }
+.meld-nameplate.position-2 { grid-column: 2; grid-row: 1; }
+.meld-nameplate.position-3 { grid-column: 3; grid-row: 2; }
+.meld-nameplate button { max-width: 100%; }
+@media (max-width: 600px) { .meld-nameplates { font-size: .8rem; gap: 0; } .meld-nameplate button { margin: 0; padding: .3rem; } }
+.meld-panel-slot { grid-column: 2; grid-row: 2; }
+.meld-panel { position: relative; }
+.meld-pointer { position: absolute; font-size: 1.5rem; line-height: 1; }
+.meld-pointer.direction-0 { bottom: -1rem; left: calc(50% - .75rem); }
+.meld-pointer.direction-1 { left: -1rem; top: calc(50% - .75rem); }
+.meld-pointer.direction-2 { top: -1rem; left: calc(50% - .75rem); }
+.meld-pointer.direction-3 { right: -1rem; top: calc(50% - .75rem); }
+/* Original table and card treatment; no remote art, fonts, or audio. */
+select { min-height: 44px; font: inherit; border-radius: .4rem; }
+#personal-settings { padding: .5rem; border-bottom: 1px solid #89968e; }
+#table-seats { display: grid; grid-template-columns: minmax(80px, 1fr) minmax(120px, 2fr) minmax(80px, 1fr); grid-template-rows: auto minmax(120px, auto) auto; gap: .5rem; background: radial-gradient(ellipse, #30694e, #173c2c); border: 8px solid #74543c; border-radius: 30%; padding: 1.5rem .4rem; color: white; }
+.seat-nameplate { background: #173029; border: 2px solid transparent; border-radius: .8rem; text-align: center; padding: .4rem; min-width: 0; overflow-wrap: anywhere; }
+.seat-nameplate p { margin: .2rem; }
+.seat-nameplate .bid-bubble { color: #192b24; }
+.seat-nameplate.position-0 { grid-column: 2; grid-row: 3; }
+.seat-nameplate.position-1 { grid-column: 1; grid-row: 2; }
+.seat-nameplate.position-2 { grid-column: 2; grid-row: 1; }
+.seat-nameplate.position-3 { grid-column: 3; grid-row: 2; }
+.active-turn { border-color: #f7d778; box-shadow: 0 0 0 3px #a68c35; }
+#hand { gap: 8px; justify-content: center; padding: 1rem 0; }
+#hand .playing-card { flex: 0 0 64px; box-sizing: border-box; min-width: 64px; margin: 0; height: 88px; background: linear-gradient(120deg, white 65%, #e9e7df); box-shadow: 0 3px 4px #192b2433; }
+#hand .playing-card:nth-child(3n+1) { rotate: -3deg; }
+#hand .playing-card:nth-child(3n+2) { translate: 0 -3px; }
+#hand .playing-card:nth-child(3n) { rotate: 3deg; }
+.selected-card { outline: 3px solid #355fbe; transform: translateY(-.6rem); }
+.trump-gold { --trump-color: #a67b13; --trump-fill: #fff1be; }
+.trump-blue { --trump-color: #2163b2; --trump-fill: #dcecff; }
+.trump-purple { --trump-color: #7846a8; --trump-fill: #efddff; }
+#hand .trump-card { border: 3px solid var(--trump-color); background: var(--trump-fill); }
+#table-stage { position: relative; margin: 1rem 0; }
+#table-center { position: absolute; top: 50%; left: 50%; width: 42%; transform: translate(-50%, -50%); text-align: center; }
+#current-trick { width: 100%; font-size: .85rem; }
+#table-presentation { text-align: center; min-height: 2rem; }
+#table-announcement { min-height: 1.5em; }
+.presentation-frame { display: flex; flex-wrap: wrap; justify-content: center; gap: .3rem; }
+.card-arrival.motion-flight { animation: card-flight var(--flight-time) ease-out; }
+.card-arrival.motion-flight.direction-1 { animation-name: card-from-left; }
+.card-arrival.motion-flight.direction-2 { animation-name: card-from-top; }
+.card-arrival.motion-flight.direction-3 { animation-name: card-from-right; }
+.card-arrival.motion-fade { animation: card-appear var(--flight-time) ease-out; }
+.trick-collect.motion-fade { animation: card-fade var(--flight-time) ease-out; }
+.trick-collect.motion-flight { animation: collect-bottom var(--flight-time) ease-in forwards; }
+.trick-collect.motion-flight.direction-1 { animation-name: collect-left; }
+.trick-collect.motion-flight.direction-2 { animation-name: collect-top; }
+.trick-collect.motion-flight.direction-3 { animation-name: collect-right; }
+@keyframes card-flight { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes card-from-left { from { transform: translateX(-70px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes card-from-top { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes card-from-right { from { transform: translateX(70px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes card-appear { from { opacity: 0; } to { opacity: 1; } }
+@keyframes card-fade { from { opacity: 1; } to { opacity: 0; } }
+@keyframes collect-bottom { to { transform: translateY(70px); opacity: 0; } }
+@keyframes collect-top { to { transform: translateY(-70px); opacity: 0; } }
+@keyframes collect-left { to { transform: translateX(-100px); opacity: 0; } }
+@keyframes collect-right { to { transform: translateX(100px); opacity: 0; } }
+@media (max-width: 600px) { main { padding: .5rem; } .auction { padding: .5rem; } #table-seats { font-size: .85rem; border-width: 4px; } }
+</style><main id="app"></main><script type="module" src="./app.js"></script></body></html>

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "protocol": 1,
+  "source": "3bde05321a173787dbd6de15f03dab767f9411c3",
+  "signaling": "https://cardslop-signaling.tom-663.workers.dev",
+  "guestOrigin": "https://cardslop.github.io",
+  "version": "0.0.8",
+  "files": {
+    "index.html": "1e9ae3764f576125a59c50e14a2c77c95c9a88ee0ecf0e5a1c24e949366a3f88",
+    "app.js": "fd8e55d587637bbbf26bdba4ecb869a5e4cdce66234b2869fbd18efb22c2ef49"
+  }
+}
